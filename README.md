@@ -3,10 +3,11 @@ A tiny HTTP-based server for RocksDB
 
 ## Features
 
-* Use RocksDB as storage engine
+* Use RocksDB as key-value storage engine
 * HTTP-base API interface
 * Authorization
 * Support basic operations: get, put, remove, drop_database
+* Batch get/put/remove (not atomic)
 
 ## Prerequisites
 You need to have Java 8+ installed. Currently supported platform includes Mac OS X and Linux.
