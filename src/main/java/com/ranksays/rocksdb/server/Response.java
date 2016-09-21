@@ -14,6 +14,7 @@ public class Response {
 	public static final int CODE_INVALID_KEY = 1002;
 	public static final int CODE_INVALID_VALUE = 1003;
 	public static final int CODE_FAILED_TO_OPEN_DB = 1004;
+	public static final int CODE_KEY_VALUE_MISMATCH = 1005;
 
 	public int code;
 	public String message;

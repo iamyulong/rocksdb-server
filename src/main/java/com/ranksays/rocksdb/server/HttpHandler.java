@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -98,6 +99,7 @@ public class HttpHandler extends AbstractHandler {
 			}
 		} catch (Exception e) {
 			res = new Response(500, "Internal server error");
+			logger.error("Internal error: " + e.getMessage());
 		}
 
 		response.setContentType("application/json; charset=utf-8");
@@ -121,20 +123,28 @@ public class HttpHandler extends AbstractHandler {
 
 		// parse parameters & open database
 		String db = null;
-		byte[] key = null;
+		byte[][] keys = null;
 		RocksDB rdb = null;
-		if (!authorize(req, resp) || (db = parseDB(req, resp)) == null || (key = parseKey(req, resp)) == null
+		if (!authorize(req, resp) || (db = parseDB(req, resp)) == null || (keys = parseKeys(req, resp)) == null
 				|| (rdb = openDatabase(db, resp)) == null) {
 			return resp;
 		}
 
 		try {
-			byte[] value = rdb.get(key);
-			if (value == null) {
-				resp.setResults(JSONObject.NULL);
-			} else {
-				resp.setResults(Base64.getEncoder().encodeToString(value));
+			byte[][] values = new byte[keys.length][];
+			for (int i = 0; i < keys.length; i++) {
+				values[i] = rdb.get(keys[i]);
 			}
+
+			JSONArray arr = new JSONArray();
+			for (int i = 0; i < keys.length; i++) {
+				if (values[i] == null) {
+					arr.put(JSONObject.NULL);
+				} else {
+					arr.put(Base64.getEncoder().encodeToString(values[i]));
+				}
+			}
+			resp.setResults(arr);
 		} catch (RocksDBException e) {
 			resp.setCode(Response.CODE_INTERNAL_ERROR);
 			resp.setMessage("Internal server error");
@@ -159,15 +169,23 @@ public class HttpHandler extends AbstractHandler {
 
 		// parse parameters & open database
 		String db = null;
-		byte[] key = null, value = null;
+		byte[][] keys = null, values = null;
 		RocksDB rdb = null;
-		if (!authorize(req, resp) || (db = parseDB(req, resp)) == null || (key = parseKey(req, resp)) == null
-				|| (value = parseValue(req, resp)) == null || (rdb = openDatabase(db, resp)) == null) {
+		if (!authorize(req, resp) || (db = parseDB(req, resp)) == null || (keys = parseKeys(req, resp)) == null
+				|| (values = parseValues(req, resp)) == null || (rdb = openDatabase(db, resp)) == null) {
+			return resp;
+		}
+
+		if (keys.length != values.length) {
+			resp.setCode(Response.CODE_KEY_VALUE_MISMATCH);
+			resp.setMessage("Number of key and value does not match");
 			return resp;
 		}
 
 		try {
-			rdb.put(key, value);
+			for (int i = 0; i < keys.length; i++) {
+				rdb.put(keys[i], values[i]);
+			}
 		} catch (RocksDBException e) {
 			resp.setCode(Response.CODE_INTERNAL_ERROR);
 			resp.setMessage("Internal server error");
@@ -192,15 +210,17 @@ public class HttpHandler extends AbstractHandler {
 
 		// parse parameters & open database
 		String db = null;
-		byte[] key = null;
+		byte[][] keys = null;
 		RocksDB rdb = null;
-		if (!authorize(req, resp) || (db = parseDB(req, resp)) == null || (key = parseKey(req, resp)) == null
+		if (!authorize(req, resp) || (db = parseDB(req, resp)) == null || (keys = parseKeys(req, resp)) == null
 				|| (rdb = openDatabase(db, resp)) == null) {
 			return resp;
 		}
 
 		try {
-			rdb.remove(key);
+			for (int i = 0; i < keys.length; i++) {
+				rdb.remove(keys[i]);
+			}
 		} catch (RocksDBException e) {
 			resp.setCode(Response.CODE_INTERNAL_ERROR);
 			resp.setMessage("Internal server error");
@@ -306,54 +326,66 @@ public class HttpHandler extends AbstractHandler {
 	}
 
 	/**
-	 * parse key from the request.
+	 * parse key(s) from the request.
 	 * 
 	 * @param req
 	 *            request body
 	 * @param resp
 	 *            response container
-	 * @return a byte array; or null if the 'key' key does not exist or the
-	 *         corresponding value is JSONObject.NULL or is not correctly
-	 *         Base64-encoded.
+	 * @return a byte array; or null if the 'keys' key does not exist or the
+	 *         corresponding value is JSONObject.NULL or is not a JSONArray of
+	 *         Base64-encoded strings.
 	 */
-	private byte[] parseKey(JSONObject req, Response resp) {
+	private byte[][] parseKeys(JSONObject req, Response resp) {
 
-		if (!req.isNull("key")) {
+		if (!req.isNull("keys")) {
 			try {
-				return Base64.getDecoder().decode(req.getString("key"));
+				JSONArray arr = req.getJSONArray("keys");
+
+				byte[][] result = new byte[arr.length()][];
+				for (int i = 0; i < arr.length(); i++) {
+					result[i] = Base64.getDecoder().decode(arr.getString(i));
+				}
+				return result;
 			} catch (Exception e) {
 				// do nothing
 			}
 		}
 
 		resp.setCode(Response.CODE_INVALID_KEY);
-		resp.setMessage("Invalid key");
+		resp.setMessage("Invalid key(s)");
 		return null;
 	}
 
 	/**
-	 * parse value from the request.
+	 * parse value(s) from the request.
 	 * 
 	 * @param req
 	 *            request body
 	 * @param resp
 	 *            response container
-	 * @return a byte array; or null if the 'value' key does not exist or the
-	 *         corresponding value is JSONObject.NULL or is not correctly
-	 *         Base64-encoded.
+	 * @return a byte array; or null if the 'values' key does not exist or the
+	 *         corresponding value is JSONObject.NULL or is not a JSONArray of
+	 *         Base64-encoded strings.
 	 */
-	private byte[] parseValue(JSONObject req, Response resp) {
+	private byte[][] parseValues(JSONObject req, Response resp) {
 
-		if (!req.isNull("value")) {
+		if (!req.isNull("values")) {
 			try {
-				return Base64.getDecoder().decode(req.getString("value"));
+				JSONArray arr = req.getJSONArray("values");
+
+				byte[][] result = new byte[arr.length()][];
+				for (int i = 0; i < arr.length(); i++) {
+					result[i] = Base64.getDecoder().decode(arr.getString(i));
+				}
+				return result;
 			} catch (Exception e) {
 				// do nothing
 			}
 		}
 
 		resp.setCode(Response.CODE_INVALID_VALUE);
-		resp.setMessage("Invalid value");
+		resp.setMessage("Invalid value(s)");
 		return null;
 	}
 
