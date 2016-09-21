@@ -1,0 +1,12 @@
+# OS generated files
+.DS_Store
+
+# Maven build target folder
+target/
+
+# Libraries and binary jars
+lib/*
+bin/rocksdb*
+
+# Log files
+log/*
