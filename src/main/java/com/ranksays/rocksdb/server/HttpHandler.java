@@ -67,7 +67,8 @@ public class HttpHandler extends AbstractHandler {
 	 */
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
-		Response res = null;
+		Response resp = null;
+
 		try {
 			// parse request
 			ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -83,28 +84,27 @@ public class HttpHandler extends AbstractHandler {
 				req.put("auth", basicAuth.substring(6));
 			}
 
-			// authentication
 			if ("/get".equals(target)) {
-				res = doGet(req);
+				resp = doGet(req);
 			} else if ("/put".equals(target)) {
-				res = doPut(req);
+				resp = doPut(req);
 			} else if ("/remove".equals(target)) {
-				res = doRemove(req);
+				resp = doRemove(req);
 			} else if ("/drop_database".equals(target)) {
-				res = doDropDatabase(req);
+				resp = doDropDatabase(req);
 			} else if ("/".equals(target)) {
-				res = new Response("This rocksdb-server is working");
+				resp = new Response("This rocksdb-server is working");
 			} else {
-				res = new Response(404, "Sorry, that page does not exist");
+				resp = new Response(404, "Sorry, that page does not exist");
 			}
 		} catch (Exception e) {
-			res = new Response(500, "Internal server error");
+			resp = new Response(500, "Internal server error");
 			logger.error("Internal error: " + e.getMessage());
 		}
 
 		response.setContentType("application/json; charset=utf-8");
 		response.setStatus(HttpServletResponse.SC_OK);
-		response.getWriter().println(res.toJSON());
+		response.getWriter().println(resp.toJSON());
 
 		baseRequest.setHandled(true);
 	}
