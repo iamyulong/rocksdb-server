@@ -5,8 +5,8 @@
 target/
 
 # Libraries and binary jars
-lib/*
+lib/
 bin/rocksdb*
 
 # Log files
-log/*
+log/
