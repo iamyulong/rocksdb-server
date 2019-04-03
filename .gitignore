@@ -11,6 +11,7 @@ bin/rocksdb*
 # Generated files
 log/
 data/
+dist/
 
 # IntelliJ
 .idea/
