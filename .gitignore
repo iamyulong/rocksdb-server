@@ -8,5 +8,10 @@ target/
 lib/
 bin/rocksdb*
 
-# Log files
+# Generated files
 log/
+data/
+
+# IntelliJ
+.idea/
+target/

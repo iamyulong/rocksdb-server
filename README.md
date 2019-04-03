@@ -14,7 +14,7 @@ You need to have Java 8+ installed. Currently supported platform includes Mac OS
 
 ## How to use
 
-1. Download the latest release from <https://github.com/ywu123/rocksdb-server/releases>.
+1. Download the latest release from <https://github.com/iamyulong/rocksdb-server/releases>.
 2. Unarchive and modify the configuration file at `conf/server.json`.
 3. Start the server via terminal: `./bin/startup.sh`.
 4. You can verify if it is working by visiting: <http://localhost:8516>
@@ -22,7 +22,7 @@ You need to have Java 8+ installed. Currently supported platform includes Mac OS
 ## Build from source
 
 ```bash
-git clone https://github.com/ywu123/rocksdb-server
+git clone https://github.com/iamyulong/rocksdb-server
 cd rocksdb-server
 mvn package
 ```
