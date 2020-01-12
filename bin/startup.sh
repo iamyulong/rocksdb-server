@@ -1,10 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
-VERSION=0.2
+dir=$(dirname "$0")
+cd "$dir/.."
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# run as background process
-echo "starting up server"
-cd $DIR/../
-java -cp "$DIR/rocksdb-server-${VERSION}.jar:$DIR/../lib/*" com.ranksays.rocksdb.server.Main &
+echo "Starting up server .."
+java -cp "./lib/*" com.ranksays.rocksdb.server.Main &

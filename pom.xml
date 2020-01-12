@@ -4,7 +4,7 @@
 
 	<groupId>com.yulongs</groupId>
 	<artifactId>rocksdb-server</artifactId>
-	<version>0.2</version>
+	<version>1.1</version>
 	<packaging>jar</packaging>
 
 	<name>rocksdb-server</name>
@@ -14,37 +14,38 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.4.17.v20190418</version>
+			<version>9.4.25.v20191220</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.rocksdb</groupId>
 			<artifactId>rocksdbjni</artifactId>
-			<version>5.17.2</version>
+			<version>6.5.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180813</version>
+			<version>20190722</version>
 		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>4.13</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.11.2</version>
+			<version>2.13.0</version>
 		</dependency>
 	</dependencies>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.dist.dir>${project.basedir}/dist/rocksdb-server-${project.version}</project.dist.dir>
 	</properties>
 
 	<build>
@@ -70,7 +71,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/lib</outputDirectory>
+							<outputDirectory>${project.dist.dir}/lib</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -81,7 +82,44 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-					<outputDirectory>${basedir}/bin</outputDirectory>
+					<outputDirectory>${project.dist.dir}/lib</outputDirectory>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<configuration>
+							<tasks>
+								<copy todir="${project.dist.dir}/conf">
+									<fileset dir="${project.basedir}/conf" />
+								</copy>
+								<copy todir="${project.dist.dir}/bin">
+									<fileset dir="${project.basedir}/bin"/>
+								</copy>
+								<chmod file="${project.dist.dir}/bin/*.sh" perm="755" />
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>dist</directory>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+dir=$(dirname "$0")
+cd "$dir/.."
 
-source $DIR/shutdown.sh
-source $DIR/startup.sh
+sh ./bin/shutdown.sh
+sh ./bin/startup.sh

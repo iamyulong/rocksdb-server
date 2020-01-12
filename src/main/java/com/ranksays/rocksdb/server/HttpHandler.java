@@ -315,7 +315,7 @@ public class HttpHandler extends AbstractHandler {
         if (!req.isNull("db")) {
             String db = req.getString("db");
 
-            if (db.matches("[a-zA-Z0-9_]+")) {
+            if (db.matches("[-_.A-Za-z0-9]+")) {
                 return db;
             }
         }

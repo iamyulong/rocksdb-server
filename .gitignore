@@ -3,16 +3,13 @@
 
 # Maven build target folder
 target/
-
-# Libraries and binary jars
-lib/
-bin/rocksdb*
-
-# Generated files
-log/
-data/
 dist/
 
 # IntelliJ
 .idea/
-target/
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings/
