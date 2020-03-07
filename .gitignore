@@ -4,6 +4,8 @@
 # Maven build target folder
 target/
 dist/
+log/
+data/
 
 # IntelliJ
 .idea/

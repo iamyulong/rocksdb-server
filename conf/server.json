@@ -1,12 +1,18 @@
 {
-	"listen": "127.0.0.1",
-	"port": 8516,
-
-	"auth": {
-		"enabled": true,
-		"username": "username",
-		"password": "password"
-	},
-	
-	"data_dir": "data"
+  "node": {
+    "host": "127.0.0.1",
+    "port": 8516
+  },
+  "auth": {
+    "enabled": false,
+    "username": "admin",
+    "password": "admin"
+  },
+  "db": {
+    "maxOpenFiles": 256,
+    "blockSize": 4096,
+    "rowCache": 33554432,
+    "writeBufferSize": 4194304
+  },
+  "dataDir": "data"
 }
