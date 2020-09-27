@@ -2,6 +2,8 @@
 
 This is a lightweight RocksDB Server based on jetty.
 
+Java client: https://github.com/iamyulong/rocksdb-client-java
+
 ## Features
 
 * Multiple concurrent databases;
